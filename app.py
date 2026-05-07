@@ -6,7 +6,7 @@ import requests
 import io
 
 # --- Configuração Inicial da Página ---
-st.set_page_config(page_title="Visualizador de LOG's Multec 700 DashBoard 3.0", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Visualizador de LOG's Motronic 1.5.4", layout="wide", initial_sidebar_state="expanded")
 
 # --- Inicialização do Estado (Navegação) ---
 if 'view' not in st.session_state:
@@ -78,7 +78,7 @@ MEMCAL_MAP = {
 # --- FUNÇÃO: Ler Planilha de Logs Públicos ---
 @st.cache_data(ttl=60)
 def carregar_lista_logs_publicos():
-    sheet_id = "1dOhOKjJlnPAJNdUC2lAH9JUGzjYzuKaB-18_e1g6kdw"
+    sheet_id = "1UhlGeITGM2ZmyVfuZZl9aWh4TxQjO-S69eDZ01z2gzs"
     url_planilha = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
     try:
         df = pd.read_csv(url_planilha)
@@ -147,7 +147,7 @@ def carregar_dados(arquivo_ou_url, colunas):
 # BARRA LATERAL (MENU DE NAVEGAÇÃO)
 # ==========================================
 with st.sidebar:
-    st.markdown("<p style='text-align: center; font-size: 15px; font-weight: bold; margin-top: 10px; color: #cccccc;'>Visualizador de LOG's<br>Multec 700 DashBoard 3.0</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-size: 15px; font-weight: bold; margin-top: 10px; color: #cccccc;'>Visualizador de LOG's<br>Motronic 1.5.4 DashBoard</p>", unsafe_allow_html=True)
     st.markdown("---")
     
     st.header("Navegação")
@@ -182,7 +182,7 @@ with st.sidebar:
                     else:
                         versao_hardware = str(ultima_linha[52]).strip()
                         if not versao_hardware.startswith('3.') and not versao_hardware.startswith('4.'):
-                            st.error(f"❌ Versão do arquivo não suportada ({versao_hardware}). Necessita de arquivos gerados pelo DashBoard versão 3.0 ou superior.")
+                            st.error(f"❌ Versão do arquivo não suportada ({versao_hardware}). Necessita de arquivos gerados pelo Motronic 1.5.4 DashBoard.")
                             st.session_state.log_selecionado = None
                         else:
                             st.session_state.log_selecionado = arquivo_local
@@ -203,7 +203,7 @@ with st.sidebar:
 # TELA 1: GALERIA DA COMUNIDADE (Lista Ampla)
 # ----------------------------------------------------
 if st.session_state.view == 'comunidade':
-    st.title("LOG's da Comunidade Multec 700")
+    st.title("LOG's da Comunidade Motronic 1.5.4")
     st.write("Clique no botão à esquerda da linha de registro do Log que deseja visualizar.")
     
     df_publicos = carregar_lista_logs_publicos()

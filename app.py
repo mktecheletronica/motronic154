@@ -16,7 +16,7 @@ if 'log_selecionado' not in st.session_state:
 
 # --- Mapeamento das 76 Colunas exatas geradas pelo C++ ---
 COLUNAS = [
-    "RTM (s)", "ID_Modulo", "MAP (V)", "MAF (Kg/h)", "MAP (kPa)", 
+    "RTM (s)", "ID_Modulo", "MAP (V)", "MAP (Kg/h)", "MAP (kPa)", 
     "CTS (V)", "CTS (°C)", "IAT (V)", "IAT (°C)", "TPS (V)", 
     "Bateria (V)", "Sonda (mV)", "RPM", "RPM_Alvo", "VSS (km/h)", 
     "Tempo_Inj_Banco (ms)", "Tempo_Inj_Ciclo (ms)", "Avanço (°)", "Atraso_Detonacao (%)", 
@@ -47,7 +47,7 @@ LIMITES_SENSORES = {
     "Sonda (mV)": (0, 1000), 
     "Avanço (°)": (0, 45),
     "Tempo_Inj_Banco (ms)": (0.0, 30.0),
-    "MAF (Kg/h)": (0.0, 300.0),
+    "MAP (Kg/h)": (0.0, 300.0),
     "MAP (kPa)": (10, 105),
     "IAC (Passos)": (0, 255),
     "Sonda_Integrador": (0, 255), # O valor ideal geralmente é 128
@@ -333,7 +333,7 @@ elif st.session_state.view == 'dashboard':
                 col_a.metric("Tensão Média Bateria", f"{df['Bateria (V)'].mean():.2f} V")
                 col_b.metric("Avanço Médio", f"{df['Avanço (°)'].mean():.1f} °")
                 col_c.metric("Sonda Lambda Média", f"{df['Sonda (mV)'].mean():.0f} mV")
-                col_d.metric("MAF Médio", f"{df['MAF (Kg/h)'].mean():.1f} Kg/h")
+                col_d.metric("MAP Médio (Massa)", f"{df['MAP (Kg/h)'].mean():.1f} Kg/h")
 
             with aba2:
                 colunas_analogicas = list(LIMITES_SENSORES.keys())
@@ -344,7 +344,7 @@ elif st.session_state.view == 'dashboard':
                     selecionados_analog = st.multiselect(
                         "Sensores Analógicos:", 
                         options=colunas_analogicas, 
-                        default=["RPM", "MAF (Kg/h)", "Sonda (mV)", "TPS (%)", "VSS (km/h)", "CTS (°C)"]
+                        default=["RPM", "MAP (Kg/h)", "Sonda (mV)", "TPS (%)", "VSS (km/h)", "CTS (°C)"]
                     )
                 with col_sel2:
                     selecionados_flags = st.multiselect(
@@ -491,7 +491,7 @@ elif st.session_state.view == 'dashboard':
                 with col_g1:
                     st.markdown("#### 🌡️ Sensores Analógicos e Medidas")
                     st.markdown("""
-                    * **MAF (Kg/h):** *Mass Air Flow* - Medidor de Massa de Ar aspirada pelo motor.
+                    * **MAP (Kg/h):** Massa de Ar aspirada pelo motor (calculada via sensor MAP).
                     * **Sonda (mV):** Tensão da Sonda Lambda O2. O ideal é oscilar ativamente entre 100mV (pobre) e 900mV (rica).
                     * **Tempo_Inj_Banco (ms):** Tempo de injeção em ms por bancada (se aplicável).
                     * **Sonda_Integrador:** Correção a curto prazo da mistura (Short Term Fuel Trim). O valor neutro é 128.

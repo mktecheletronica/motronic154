@@ -37,21 +37,40 @@ COLUNAS = [
 ]
 
 # --- Configuração dos Limites (Min/Max) Exatos para Motronic ---
+# Adicionado TODOS os sensores analógicos e calculados para aparecerem nos gráficos
 LIMITES_SENSORES = {
-    "RPM": (0, 7500),
-    "CTS (°C)": (0, 120),
-    "IAT (°C)": (0, 100),
-    "VSS (km/h)": (0, 240),
-    "TPS (%)": (0, 100),
-    "Bateria (V)": (8.0, 16.0),
-    "Sonda (mV)": (0, 1000), 
-    "Avanço (°)": (0, 45),
-    "Tempo_Inj_Banco (ms)": (0.0, 30.0),
+    "MAP (V)": (0.0, 5.0),
     "MAP (Kg/h)": (0.0, 300.0),
     "MAP (kPa)": (10, 105),
+    "CTS (V)": (0.0, 5.0),
+    "CTS (°C)": (0, 120),
+    "IAT (V)": (0.0, 5.0),
+    "IAT (°C)": (0, 100),
+    "TPS (V)": (0.0, 5.0),
+    "Bateria (V)": (8.0, 16.0),
+    "Sonda (mV)": (0, 1000),
+    "RPM": (0, 7500),
+    "RPM_Alvo": (0, 3000),
+    "VSS (km/h)": (0, 240),
+    "Tempo_Inj_Banco (ms)": (0.0, 30.0),
+    "Tempo_Inj_Ciclo (ms)": (0.0, 30.0),
+    "Avanço (°)": (0, 45),
+    "Atraso_Detonacao (%)": (0, 100),
+    "TPS (%)": (0, 100),
+    "Canister (%)": (0, 100),
+    "EGR (%)": (0, 100),
+    "Tempo_Carga (ms)": (0.0, 20.0),
+    "Vazao_Ar_Atual (Kg/h)": (0.0, 300.0),
+    "Vazao_Ar_Alvo (Kg/h)": (0.0, 300.0),
     "IAC (Passos)": (0, 255),
-    "Sonda_Integrador": (0, 255), # O valor ideal geralmente é 128
+    "IAC_BLM (Passos)": (0, 255),
+    "IAC_Integrador": (0, 255),
+    "Sonda_Integrador": (0, 255),
+    "Sonda_BLM_Lenta": (0, 255),
+    "Sonda_BLM_Parcial": (0, 255),
+    "Consumo_Medio (km/L)": (0.0, 30.0),
     "Consumo_Inst (L/h)": (0.0, 30.0),
+    "Distancia_Total (km)": (0.0, 1000.0)
 }
 
 # --- Tabela de DTCs Motronic 1.5.4 ---
@@ -93,8 +112,8 @@ DTC_TABLE = {
     62: "Valvula de Ventilacao - Tensao Alta",
     69: "Sensor Temp. Ar - Tensao Baixa",
     71: "Sensor Temp. Ar - Tensao Alta",
-    73: "Sensor MAF - Tensao Baixa",
-    74: "Sensor MAF - Tensao Alta",
+    73: "Sensor MAP/MAF - Tensao Baixa",
+    74: "Sensor MAP/MAF - Tensao Alta",
     75: "Circuito Controle Torque - Tensao Baixa",
     76: "Controle de Torque Continuo",
     77: "Rele Vent. Baixa - Tensao Baixa",
@@ -484,41 +503,76 @@ elif st.session_state.view == 'dashboard':
 
             with aba5:
                 st.subheader("📖 Glossário de Parâmetros Motronic 1.5.4")
-                st.markdown("Diferenças cruciais entre a Multec e a Motronic.")
+                st.markdown("Consulta rápida de todos os parâmetros lidos e processados pelo sistema.")
                 
                 col_g1, col_g2 = st.columns(2)
                 
                 with col_g1:
                     st.markdown("#### 🌡️ Sensores Analógicos e Medidas")
                     st.markdown("""
-                    * **MAP (Kg/h):** Massa de Ar aspirada pelo motor (calculada via sensor MAP).
-                    * **Sonda (mV):** Tensão da Sonda Lambda O2. O ideal é oscilar ativamente entre 100mV (pobre) e 900mV (rica).
-                    * **Tempo_Inj_Banco (ms):** Tempo de injeção em ms por bancada (se aplicável).
-                    * **Sonda_Integrador:** Correção a curto prazo da mistura (Short Term Fuel Trim). O valor neutro é 128.
-                    * **Sonda_BLM:** *Block Learn Multiplier* - Aprendizagem de longo prazo da mistura (Long Term Fuel Trim).
-                    * **IAC_BLM e Integrador:** Sistema inteligente de aprendizagem dos passos da marcha lenta.
-                    * **Atraso_Detonacao (%):** O quanto a ECU atrasou o ponto devido a detonação (sensor Knock).
+                    * **MAP (V) / MAP (kPa) / MAP (Kg/h):** Tensão, Pressão absoluta e cálculo da Massa de Ar aspirada pelo motor.
+                    * **CTS (V) / CTS (°C):** Tensão e Temperatura do sensor do líquido de arrefecimento (Água).
+                    * **IAT (V) / IAT (°C):** Tensão e Temperatura do ar admitido no coletor.
+                    * **TPS (V) / TPS (%):** Tensão e Porcentagem de abertura do sensor da borboleta de aceleração.
+                    * **Bateria (V):** Tensão elétrica do sistema lida diretamente pela ECU.
+                    * **Sonda (mV):** Tensão gerada pela Sonda Lambda. Oscilações ideais entre 100mV (pobre) e 900mV (rica).
+                    * **RPM:** Rotação atual do motor.
+                    * **VSS (km/h):** Velocidade atual do veículo lida através do sensor de velocidade.
+                    """)
+
+                    st.markdown("#### ⚙️ Parâmetros Calculados / Atuadores")
+                    st.markdown("""
+                    * **RPM_Alvo:** Rotação objetivo que a ECU tenta manter durante a marcha lenta.
+                    * **Tempo_Inj_Banco (ms) / Tempo_Inj_Ciclo (ms):** Duração do pulso de injeção em milissegundos para alimentar o motor.
+                    * **Avanço (°):** Ponto de ignição ordenado pela ECU.
+                    * **Atraso_Detonacao (%):** Percentagem de atraso de ponto aplicado pela ECU ao detetar batida de pino.
+                    * **Canister (%):** Abertura percentual comandada para a válvula de purga dos vapores do tanque.
+                    * **EGR (%):** Abertura percentual comandada para a válvula de recirculação de gases de escape.
+                    * **Tempo_Carga (ms):** Dwell - Tempo de carga das bobinas de ignição.
+                    * **Vazao_Ar_Atual / Vazao_Ar_Alvo (Kg/h):** Cálculos da ECU para controlar a admissão de ar auxiliar.
+                    * **IAC (Passos):** Posição momentânea do motor de passo (Atuador de marcha lenta).
+                    * **IAC_BLM (Passos) / IAC_Integrador:** Valores de aprendizagem a longo/curto prazo para manter a marcha lenta estável.
+                    * **Sonda_Integrador:** Correção a curto prazo do combustível (Short Term Fuel Trim). Neutro = 128.
+                    * **Sonda_BLM_Lenta / Sonda_BLM_Parcial:** Aprendizagem a longo prazo da injeção de combustível (Long Term Fuel Trim). Neutro = 128.
+                    * **Consumo_Medio (km/L) / Consumo_Inst (L/h):** Cálculos estatísticos providenciados pelo DashBoard.
+                    * **Distancia_Total (km):** Hodômetro registado pela aplicação.
                     """)
 
                 with col_g2:
-                    st.markdown("#### 🚩 Flags (Sinais Digitais)")
+                    st.markdown("#### 🚩 Flags (Sinais Digitais / Status)")
                     st.markdown("""
-                    * **Flag_Malha_Fechada:** Quando = 1, a ECU está lendo ativamente a Sonda Lambda para corrigir a injeção.
-                    * **Flag_Check_Engine:** Luz da injeção acesa no painel.
-                    * **Flag_Knock:** Sensor identificou ruído (batida de pino).
-                    * **Flag_Mistura:** Quando 1 = Rica, 0 = Pobre. Usado em conjunto com a tensão da sonda.
+                    * **Flag_VSS:** ECU confirma recebimento do sinal de velocidade.
+                    * **Flag_RPM:** ECU confirma recebimento do pulso de rotação.
+                    * **Flag_ParkNeutral:** Veículo na posição Park ou Neutro (câmbio automático).
+                    * **Flag_TorqueCtrl:** Módulo de controle de tração solicitando redução de potência.
+                    * **Flag_TPS_Lenta:** Acelerador totalmente solto.
+                    * **Flag_TPS_Plena:** Acelerador totalmente pressionado (WOT).
+                    * **Flag_AC_Pressao:** Sinal de que a pressão do gás do ar condicionado está nos limites.
+                    * **Flag_AC_Botao:** O motorista acionou o botão do ar condicionado.
                     * **Flag_Diag_Rqst:** Pedido de diagnóstico ativo via Scanner ou Jumper ALDL.
-                    * **Flag_Imob_Rec/Act:** Status da comunicação com o sistema de Imobilizador do veículo.
-                    * **Flag_TorqueCtrl:** Módulo de controle de tração/transmissão atuando sobre a ECU.
+                    * **Flag_Malha_Fechada:** ECU corrigindo ativamente a injeção com base na leitura da Sonda Lambda (Closed Loop).
+                    * **Flag_EGR_Ativa:** Sistema EGR em funcionamento.
+                    * **Flag_Knock:** Sinal de detonação (batida de pino) detectado no bloco do motor.
+                    * **Flag_AC_Embreagem:** ECU acoplou o relé da embreagem do compressor do A/C.
+                    * **Flag_Bomba_Comb:** Relé da bomba elétrica de combustível acionado.
+                    * **Flag_Bomba_Ar:** Bomba de injeção de ar secundário acionada (se aplicável).
+                    * **Flag_Check_Engine:** ECU acendeu a luz de avaria (MIL) no painel.
+                    * **Flag_Mistura:** Indica qual o status lido pela sonda naquele milissegundo (1 = Rica, 0 = Pobre).
+                    * **Flag_MotorCil:** ECU identificou o tipo de bloco (ex: 4 Cilindros vs 6 Cilindros).
+                    * **Flag_Transmissao:** ECU identificou o tipo de câmbio (Manual/Automático).
+                    * **Flag_Imob_Rec:** Recepção de sinal ativo do Imobilizador.
+                    * **Flag_Imob_Act:** Imobilizador atuando/bloqueando a ECU.
+                    * **Flag_Ventoinha:** Relé acionou o eletroventilador do radiador.
                     """)
                     
-                st.markdown("---")
-                st.markdown("#### ⚠️ Códigos de Erro (DTCs)")
-                st.markdown("Lista completa de falhas mapeadas pela ECU Motronic 1.5.4.")
-                
-                # Criar um DataFrame com a tabela de DTCs para ficar bonito e pesquisável
-                dtc_df = pd.DataFrame(list(DTC_TABLE.items()), columns=["Código", "Descrição da Falha"])
-                st.dataframe(dtc_df, hide_index=True, use_container_width=True)
+            # Tabela de Falhas posicionada em destaque e ocupando largura total da tela no fundo
+            st.markdown("---")
+            st.markdown("#### ⚠️ Códigos de Erro (DTCs)")
+            st.markdown("Lista completa e pesquisável de avarias mapeadas pelo sistema Motronic 1.5.4.")
+            
+            # Recriando o dataframe com a tabela integral
+            dtc_df = pd.DataFrame(list(DTC_TABLE.items()), columns=["Código da Falha", "Descrição da Avaria ECU"])
+            st.dataframe(dtc_df, hide_index=True, use_container_width=True)
 
     else:
         st.info("👈 Utilize o menu lateral esquerdo para carregar um Arquivo de log local ou explore a opção \"LOG's da Comunidade\".")

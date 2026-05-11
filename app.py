@@ -503,69 +503,84 @@ elif st.session_state.view == 'dashboard':
 
             with aba5:
                 st.subheader("📖 Glossário de Parâmetros Motronic 1.5.4")
-                st.markdown("Consulta rápida de todos os parâmetros lidos e processados pelo sistema.")
+                st.markdown("Consulta rápida de todos os parâmetros lidos e processados pelo sistema, com as descrições originais.")
                 
                 col_g1, col_g2 = st.columns(2)
                 
                 with col_g1:
                     st.markdown("#### 🌡️ Sensores Analógicos e Medidas")
                     st.markdown("""
-                    * **MAP (V) / MAP (kPa) / MAP (Kg/h):** Tensão, Pressão absoluta e cálculo da Massa de Ar aspirada pelo motor.
-                    * **CTS (V) / CTS (°C):** Tensão e Temperatura do sensor do líquido de arrefecimento (Água).
-                    * **IAT (V) / IAT (°C):** Tensão e Temperatura do ar admitido no coletor.
-                    * **TPS (V) / TPS (%):** Tensão e Porcentagem de abertura do sensor da borboleta de aceleração.
-                    * **Bateria (V):** Tensão elétrica do sistema lida diretamente pela ECU.
-                    * **Sonda (mV):** Tensão gerada pela Sonda Lambda. Oscilações ideais entre 100mV (pobre) e 900mV (rica).
-                    * **RPM:** Rotação atual do motor.
-                    * **VSS (km/h):** Velocidade atual do veículo lida através do sensor de velocidade.
+                    * **RTM (s):** TEMPO EM SEGUNDOS
+                    * **ID_Modulo:** IDENTIFICAÇÃO DO MODULO
+                    * **MAP (V):** TENSÃO DO MAP EM VOLTS
+                    * **MAP (Kg/h):** LEITURA DO MAP EM Kg/h
+                    * **MAP (kPa):** LEITURA DO MAPA EM Kpa
+                    * **CTS (V):** TENSÃO DO SENSOR CTS VOLTS
+                    * **CTS (°C):** TEMPERATURA EM GRAUS DO SENSOR CTS (ÁGUA)
+                    * **IAT (V):** TENSÃO DO SENSOR IAT EM VOLTS
+                    * **IAT (°C):** TEMPERATURA DO SENSOR IAT EM GRAUS (AR)
+                    * **TPS (V):** TENSAO DO SENSOR TPS EM VOLTS
+                    * **Bateria (V):** TENSAO DA BATERIA EM VOLTS
+                    * **Sonda (mV):** TENSAO DA SONDA LAMBDA EM MILIVOLTS
+                    * **RPM:** ROTAÇÃO DO MOTOR EM RPM
+                    * **VSS (km/h):** VELOCIDADE EM KM/H
                     """)
 
-                    st.markdown("#### ⚙️ Parâmetros Calculados / Atuadores")
+                    st.markdown("#### ⚙️ Parâmetros Calculados / Atuadores / Outros")
                     st.markdown("""
-                    * **RPM_Alvo:** Rotação objetivo que a ECU tenta manter durante a marcha lenta.
-                    * **Tempo_Inj_Banco (ms) / Tempo_Inj_Ciclo (ms):** Duração do pulso de injeção em milissegundos para alimentar o motor.
-                    * **Avanço (°):** Ponto de ignição ordenado pela ECU.
-                    * **Atraso_Detonacao (%):** Percentagem de atraso de ponto aplicado pela ECU ao detetar batida de pino.
-                    * **Canister (%):** Abertura percentual comandada para a válvula de purga dos vapores do tanque.
-                    * **EGR (%):** Abertura percentual comandada para a válvula de recirculação de gases de escape.
-                    * **Tempo_Carga (ms):** Dwell - Tempo de carga das bobinas de ignição.
-                    * **Vazao_Ar_Atual / Vazao_Ar_Alvo (Kg/h):** Cálculos da ECU para controlar a admissão de ar auxiliar.
-                    * **IAC (Passos):** Posição momentânea do motor de passo (Atuador de marcha lenta).
-                    * **IAC_BLM (Passos) / IAC_Integrador:** Valores de aprendizagem a longo/curto prazo para manter a marcha lenta estável.
-                    * **Sonda_Integrador:** Correção a curto prazo do combustível (Short Term Fuel Trim). Neutro = 128.
-                    * **Sonda_BLM_Lenta / Sonda_BLM_Parcial:** Aprendizagem a longo prazo da injeção de combustível (Long Term Fuel Trim). Neutro = 128.
-                    * **Consumo_Medio (km/L) / Consumo_Inst (L/h):** Cálculos estatísticos providenciados pelo DashBoard.
-                    * **Distancia_Total (km):** Hodômetro registado pela aplicação.
+                    * **RPM_Alvo:** ROTAÇÃO ALVO PARA MARCHA LENTA EM RPM
+                    * **Tempo_Inj_Banco (ms):** TEMPO DE INJEÇÃO POR BANCO EM ms
+                    * **Tempo_Inj_Ciclo (ms):** TEMPO DE INJEÇÃO POR CICLO EM ms
+                    * **Avanço (°):** AVANÇO DE IGNIÇÃO EM GRAUS
+                    * **Atraso_Detonacao (%):** RETARDO DA IGNIÇÃO EM PORCENTAGEM
+                    * **TPS (%):** ABERTURA DO TPS EM PORCENTAGEM
+                    * **Canister (%):** ABERTURA DO CANISTER EM PORCENTAGEM
+                    * **EGR (%):** ABERTURA DA VALVULA EGR EM PORCENTAGEM
+                    * **Tempo_Carga (ms):** TEMPO DE CARGA EM ms
+                    * **Vazao_Ar_Atual (Kg/h):** VAZAO DE AR ATUAL EM Kg/h
+                    * **Vazao_Ar_Alvo (Kg/h):** VAZAO DE ALVO PARA MARCHA LENTA EM Kg/h
+                    * **IAC (Passos):** POSIÇÃO DO ATUADOR DE MARCHA LENTA EM PASSOS
+                    * **IAC_BLM (Passos):** IAC BLOCK LEARN EM PASSOS
+                    * **IAC_Integrador:** INTEGRADOR IAC EM PASSOS
+                    * **Sonda_Integrador:** INTEGRADOR O2 (SONDA LAMBDA)
+                    * **Sonda_BLM_Lenta:** INTEGRADOR O2 PARA MARCHA LENTA EM PASSOS
+                    * **Sonda_BLM_Parcial:** INTEGRADOR O2 PARA CARGA PARCIAL EM PASSOS
+                    * **Consumo_Medio (km/L):** MEDIA DE CONSUMO EM KM/L
+                    * **Consumo_Inst (L/h):** CONSUMO INSTANTANEO EM LITROS/H
+                    * **Distancia_Total (km):** DISTANCIA PERCORRIDA EM KM
+                    * **AlphaCode:** ALPHACODE DE REFERENCIA DO MODULO
+                    * **Codigo_GM:** CODIGO NUMERICO PADRÃO GM
+                    * **NumFalhas:** NUMERO DE FALHAS REGISTRADAS
+                    * **Versao_HW:** VERSÃO DO MOTRONIC DASHBOARD
                     """)
 
                 with col_g2:
                     st.markdown("#### 🚩 Flags (Sinais Digitais / Status)")
                     st.markdown("""
-                    * **Flag_VSS:** ECU confirma recebimento do sinal de velocidade.
-                    * **Flag_RPM:** ECU confirma recebimento do pulso de rotação.
-                    * **Flag_ParkNeutral:** Veículo na posição Park ou Neutro (câmbio automático).
-                    * **Flag_TorqueCtrl:** Módulo de controle de tração solicitando redução de potência.
-                    * **Flag_TPS_Lenta:** Acelerador totalmente solto.
-                    * **Flag_TPS_Plena:** Acelerador totalmente pressionado (WOT).
-                    * **Flag_AC_Pressao:** Sinal de que a pressão do gás do ar condicionado está nos limites.
-                    * **Flag_AC_Botao:** O motorista acionou o botão do ar condicionado.
-                    * **Flag_Diag_Rqst:** Pedido de diagnóstico ativo via Scanner ou Jumper ALDL.
-                    * **Flag_Malha_Fechada:** ECU corrigindo ativamente a injeção com base na leitura da Sonda Lambda (Closed Loop).
-                    * **Flag_EGR_Ativa:** Sistema EGR em funcionamento.
-                    * **Flag_Knock:** Sinal de detonação (batida de pino) detectado no bloco do motor.
-                    * **Flag_AC_Embreagem:** ECU acoplou o relé da embreagem do compressor do A/C.
-                    * **Flag_Bomba_Comb:** Relé da bomba elétrica de combustível acionado.
-                    * **Flag_Bomba_Ar:** Bomba de injeção de ar secundário acionada (se aplicável).
-                    * **Flag_Check_Engine:** ECU acendeu a luz de avaria (MIL) no painel.
-                    * **Flag_Mistura:** Indica qual o status lido pela sonda naquele milissegundo (1 = Rica, 0 = Pobre).
-                    * **Flag_MotorCil:** ECU identificou o tipo de bloco (ex: 4 Cilindros vs 6 Cilindros).
-                    * **Flag_Transmissao:** ECU identificou o tipo de câmbio (Manual/Automático).
-                    * **Flag_Imob_Rec:** Recepção de sinal ativo do Imobilizador.
-                    * **Flag_Imob_Act:** Imobilizador atuando/bloqueando a ECU.
-                    * **Flag_Ventoinha:** Relé acionou o eletroventilador do radiador.
+                    * **Flag_VSS:** FLAG DO SINAL DO SENSOR DE VELOCIDADE
+                    * **Flag_RPM:** FLAG DO SINAL DO SENSOR DE ROTAÇÃO
+                    * **Flag_ParkNeutral:** FLAG DO SENSOR PARK/NEUTRAL
+                    * **Flag_TorqueCtrl:** FLAG DO CONTROLE DE TORQUE
+                    * **Flag_TPS_Lenta:** FLAG DO TPS EM MARCHA LENTA
+                    * **Flag_TPS_Plena:** FLAG DO TPS EM CARGA TOTAL
+                    * **Flag_AC_Pressao:** FLAG DO SENSOR DE ALTA PRESSÃO DO A/C
+                    * **Flag_AC_Botao:** FLAG DA CHAVE DE ACIONAMENTO DO AR CONDICIONADO
+                    * **Flag_Diag_Rqst:** FLAG DE INDICAÇÃO DO MODO DE DIAGNÓSTICO
+                    * **Flag_Malha_Fechada:** FLAG DE INDICAÇÃO DA MALHA
+                    * **Flag_EGR_Ativa:** FLAG DE ACIONAMENTO DA VALVULA EGR
+                    * **Flag_Knock:** FLAG DO SENSOR DE RETARDO
+                    * **Flag_AC_Embreagem:** FLAG DO RELÉ DE EMBREAGEM DO AR CONDICIONADO
+                    * **Flag_Bomba_Comb:** FLAG DO ESTADO DA BOMBA DE COMBUSTIVEL
+                    * **Flag_Bomba_Ar:** FLAG DA BOMBA DE AR
+                    * **Flag_Check_Engine:** FLAG DE INDICAÇÃO DE FALHA
+                    * **Flag_Mistura:** FLAG DE INDICAÇÃO DA MISTURA AFR
+                    * **Flag_MotorCil:** FLAG DO TIPO DE MOTOR
+                    * **Flag_Transmissao:** FLAG DO TIPO DE TRANSMISSÃO
+                    * **Flag_Imob_Rec:** FLAG DO SINAL RECEPTOR DO IMOBILIZADOR
+                    * **Flag_Imob_Act:** FLAG DO IMOBILIZADOR
+                    * **Flag_Ventoinha:** FLAG DA VENTOINHA
                     """)
                     
-                # Tabela de Falhas agora recuada corretamente para aparecer apenas no Glossário
                 st.markdown("---")
                 st.markdown("#### ⚠️ Códigos de Erro (DTCs)")
                 st.markdown("Lista completa e pesquisável de avarias mapeadas pelo sistema Motronic 1.5.4.")

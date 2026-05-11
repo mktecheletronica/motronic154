@@ -565,14 +565,13 @@ elif st.session_state.view == 'dashboard':
                     * **Flag_Ventoinha:** Relé acionou o eletroventilador do radiador.
                     """)
                     
-            # Tabela de Falhas posicionada em destaque e ocupando largura total da tela no fundo
-            st.markdown("---")
-            st.markdown("#### ⚠️ Códigos de Erro (DTCs)")
-            st.markdown("Lista completa e pesquisável de avarias mapeadas pelo sistema Motronic 1.5.4.")
-            
-            # Recriando o dataframe com a tabela integral
-            dtc_df = pd.DataFrame(list(DTC_TABLE.items()), columns=["Código da Falha", "Descrição da Avaria ECU"])
-            st.dataframe(dtc_df, hide_index=True, use_container_width=True)
+                # Tabela de Falhas agora recuada corretamente para aparecer apenas no Glossário
+                st.markdown("---")
+                st.markdown("#### ⚠️ Códigos de Erro (DTCs)")
+                st.markdown("Lista completa e pesquisável de avarias mapeadas pelo sistema Motronic 1.5.4.")
+                
+                dtc_df = pd.DataFrame(list(DTC_TABLE.items()), columns=["Código da Falha", "Descrição da Avaria ECU"])
+                st.dataframe(dtc_df, hide_index=True, use_container_width=True)
 
     else:
         st.info("👈 Utilize o menu lateral esquerdo para carregar um Arquivo de log local ou explore a opção \"LOG's da Comunidade\".")

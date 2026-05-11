@@ -511,6 +511,14 @@ elif st.session_state.view == 'dashboard':
                     * **Flag_Imob_Rec/Act:** Status da comunicação com o sistema de Imobilizador do veículo.
                     * **Flag_TorqueCtrl:** Módulo de controle de tração/transmissão atuando sobre a ECU.
                     """)
+                    
+                st.markdown("---")
+                st.markdown("#### ⚠️ Códigos de Erro (DTCs)")
+                st.markdown("Lista completa de falhas mapeadas pela ECU Motronic 1.5.4.")
+                
+                # Criar um DataFrame com a tabela de DTCs para ficar bonito e pesquisável
+                dtc_df = pd.DataFrame(list(DTC_TABLE.items()), columns=["Código", "Descrição da Falha"])
+                st.dataframe(dtc_df, hide_index=True, use_container_width=True)
 
     else:
         st.info("👈 Utilize o menu lateral esquerdo para carregar um Arquivo de log local ou explore a opção \"LOG's da Comunidade\".")

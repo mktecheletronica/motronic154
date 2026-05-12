@@ -37,7 +37,6 @@ COLUNAS = [
 ]
 
 # --- Configuração dos Limites (Min/Max) Exatos para Motronic ---
-# Adicionado TODOS os sensores analógicos e calculados para aparecerem nos gráficos
 LIMITES_SENSORES = {
     "MAP (V)": (0.0, 5.0),
     "MAP (Kg/h)": (0.0, 300.0),
@@ -183,17 +182,25 @@ def carregar_lista_logs_publicos():
 
 # --- FUNÇÃO: Carregamento de Dados (Local ou Nuvem) ---
 @st.cache_data
-def carregar_dados(arquivo_ou_url, colunas):
+def carregar_dados(arquivo_ou_url_ou_conteudo, colunas):
     try:
-        if isinstance(arquivo_ou_url, str) and arquivo_ou_url.startswith("http"):
-            resposta = requests.get(arquivo_ou_url)
-            resposta.raise_for_status()
-            conteudo = io.StringIO(resposta.text)
+        # Analisando se é uma string (URL ou conteúdo do arquivo)
+        if isinstance(arquivo_ou_url_ou_conteudo, str):
+            if arquivo_ou_url_ou_conteudo.startswith("http"):
+                # Se for URL, fazemos o donwload
+                resposta = requests.get(arquivo_ou_url_ou_conteudo)
+                resposta.raise_for_status()
+                conteudo = io.StringIO(resposta.text)
+            else:
+                # Se for texto, lemos diretamente (resolve o bug de recarga do widget)
+                conteudo = io.StringIO(arquivo_ou_url_ou_conteudo)
+                
             df = pd.read_csv(conteudo, sep="|", header=None, names=colunas)
         else:
-            if hasattr(arquivo_ou_url, 'seek'):
-                arquivo_ou_url.seek(0)
-            df = pd.read_csv(arquivo_ou_url, sep="|", header=None, names=colunas)
+            # Fallback (caso um arquivo seja passado como file-like object)
+            if hasattr(arquivo_ou_url_ou_conteudo, 'seek'):
+                arquivo_ou_url_ou_conteudo.seek(0)
+            df = pd.read_csv(arquivo_ou_url_ou_conteudo, sep="|", header=None, names=colunas)
             
         df["RTM (s)"] = pd.to_numeric(df["RTM (s)"], errors="coerce")
         df = df.dropna(subset=["RTM (s)"]).copy()
@@ -240,6 +247,7 @@ with st.sidebar:
         
         if arquivo_local:
             try:
+                # Resolvemos o problema extraindo o texto cru imediatamente
                 conteudo = arquivo_local.getvalue().decode('utf-8', errors='ignore')
                 linhas = [l for l in conteudo.split('\n') if l.strip()]
                 
@@ -253,12 +261,10 @@ with st.sidebar:
                         st.error("❌ Arquivo incompatível! Faltam parâmetros da injeção Motronic.")
                         st.session_state.log_selecionado = None
                     else:
-                        st.session_state.log_selecionado = arquivo_local
+                        # Salvamos a string no session_state em vez do widget temporário
+                        st.session_state.log_selecionado = conteudo
             except Exception as e:
                 st.error("❌ Erro ao tentar ler a assinatura do arquivo. Arquivo corrompido.")
-                st.session_state.log_selecionado = None
-        else:
-            if st.session_state.log_selecionado is not None and not isinstance(st.session_state.log_selecionado, str):
                 st.session_state.log_selecionado = None
 
     st.markdown("<br><br>", unsafe_allow_html=True)

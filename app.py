@@ -503,7 +503,7 @@ elif st.session_state.view == 'dashboard':
 
             with aba5:
                 st.subheader("📖 Glossário de Parâmetros Motronic 1.5.4")
-                st.markdown("Consulta rápida de todos os parâmetros lidos e processados pelo sistema, com as descrições originais.")
+                st.markdown("Consulta rápida de todos os parâmetros lidos e processados pelo sistema.")
                 
                 col_g1, col_g2 = st.columns(2)
                 
@@ -513,7 +513,6 @@ elif st.session_state.view == 'dashboard':
                     * **RTM (s):** TEMPO EM SEGUNDOS
                     * **ID_Modulo:** IDENTIFICAÇÃO DO MODULO
                     * **MAP (V):** TENSÃO DO MAP EM VOLTS
-                    * **MAP (Kg/h):** LEITURA DO MAP EM Kg/h
                     * **MAP (kPa):** LEITURA DO MAPA EM Kpa
                     * **CTS (V):** TENSÃO DO SENSOR CTS VOLTS
                     * **CTS (°C):** TEMPERATURA EM GRAUS DO SENSOR CTS (ÁGUA)
@@ -571,7 +570,6 @@ elif st.session_state.view == 'dashboard':
                     * **Flag_Knock:** FLAG DO SENSOR DE RETARDO
                     * **Flag_AC_Embreagem:** FLAG DO RELÉ DE EMBREAGEM DO AR CONDICIONADO
                     * **Flag_Bomba_Comb:** FLAG DO ESTADO DA BOMBA DE COMBUSTIVEL
-                    * **Flag_Bomba_Ar:** FLAG DA BOMBA DE AR
                     * **Flag_Check_Engine:** FLAG DE INDICAÇÃO DE FALHA
                     * **Flag_Mistura:** FLAG DE INDICAÇÃO DA MISTURA AFR
                     * **Flag_MotorCil:** FLAG DO TIPO DE MOTOR

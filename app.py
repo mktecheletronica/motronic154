@@ -352,7 +352,7 @@ elif st.session_state.view == 'dashboard':
                 col_a.metric("Tensão Média Bateria", f"{df['Bateria (V)'].mean():.2f} V")
                 col_b.metric("Avanço Médio", f"{df['Avanço (°)'].mean():.1f} °")
                 col_c.metric("Sonda Lambda Média", f"{df['Sonda (mV)'].mean():.0f} mV")
-                col_d.metric("MAP Médio", f"{df['MAP (kPa)'].mean():.1f} Kg/h")
+                col_d.metric("MAP Médio", f"{df['MAP (kPa)'].mean():.1f} kPa")
 
             with aba2:
                 colunas_analogicas = list(LIMITES_SENSORES.keys())

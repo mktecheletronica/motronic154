@@ -352,7 +352,7 @@ elif st.session_state.view == 'dashboard':
                 col_a.metric("Tensão Média Bateria", f"{df['Bateria (V)'].mean():.2f} V")
                 col_b.metric("Avanço Médio", f"{df['Avanço (°)'].mean():.1f} °")
                 col_c.metric("Sonda Lambda Média", f"{df['Sonda (mV)'].mean():.0f} mV")
-                col_d.metric("MAP Médio (Massa)", f"{df['MAP (Kg/h)'].mean():.1f} Kg/h")
+                col_d.metric("MAP Médio", f"{df['MAP (kPa)'].mean():.1f} Kg/h")
 
             with aba2:
                 colunas_analogicas = list(LIMITES_SENSORES.keys())
@@ -363,13 +363,13 @@ elif st.session_state.view == 'dashboard':
                     selecionados_analog = st.multiselect(
                         "Sensores Analógicos:", 
                         options=colunas_analogicas, 
-                        default=["RPM", "MAP (Kg/h)", "Sonda (mV)", "TPS (%)", "VSS (km/h)", "CTS (°C)"]
+                        default=["RPM", "MAP (kPa)", "Sonda (mV)", "TPS (%)", "VSS (km/h)", "CTS (°C)"]
                     )
                 with col_sel2:
                     selecionados_flags = st.multiselect(
                         "Sinais Digitais / Flags (ON/OFF):", 
                         options=colunas_flags, 
-                        default=["Flag_Malha_Fechada", "Flag_Ventoinha", "Flag_Bomba_Comb"]
+                        default=["Flag_Malha_Fechada", "Flag_Knock", "Flag_AC_Embreagem"]
                     )
 
                 if selecionados_analog or selecionados_flags:

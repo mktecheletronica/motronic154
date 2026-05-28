@@ -372,7 +372,7 @@ else:
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("RPM Máximo", f"{df['RPM'].max():.0f} RPM")
             col2.metric("Temp Máxima Água", f"{df['CTS (°C)'].max():.0f} °C")
-            col3.metric("Distância Percorrida", f"{df['Distancia_Total (km)'].iloc[-1]:.2f} km")
+            col3.metric("MAP Máximo", f"{df['MAP (kPa)'].max():.1f} kPa")
             col4.metric("Velocidade Máxima", f"{df['VSS (km/h)'].max():.0f} km/h")
 
             st.markdown("---")
@@ -392,7 +392,7 @@ else:
             with col_sel1:
                 selecionados_analog = st.multiselect("Sensores Analógicos:", options=colunas_analogicas, default=["RPM", "MAP (kPa)", "Sonda (mV)", "TPS (%)", "VSS (km/h)", "CTS (°C)"])
             with col_sel2:
-                selecionados_flags = st.multiselect("Sinais Digitais / Flags (ON/OFF):", options=colunas_flags, default=["Flag_Malha_Fechada", "Flag_Knock", "Flag_AC_Embreagem"])
+                selecionados_flags = st.multiselect("Sinais Digitais / Flags (ON/OFF):", options=colunas_flags, default=["Flag_Knock", "Flag_AC_Embreagem"])
 
             if selecionados_analog or selecionados_flags:
                 fig = go.Figure()
@@ -472,7 +472,7 @@ else:
 
         # ABA 3: DIAGNÓSTICO E INTELIGÊNCIA ARTIFICIAL
         with aba3:
-            st.subheader("Módulo de Diagnóstico e Análise de Falhas (Motronic)")
+            st.subheader("Módulo de Diagnóstico e Análise de Falhas")
             
             # ---------------------------------------------------------
             # 1. SISTEMA ORIGINAL DA ECU

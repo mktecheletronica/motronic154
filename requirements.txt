@@ -2,3 +2,7 @@ pandas
 plotly
 streamlit>=1.35.0
 requests
+tensorflow-cpu
+scikit-learn
+google-generativeai>=0.5.2
+google-genai

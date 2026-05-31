@@ -949,6 +949,6 @@ else:
                 use_container_width=False, # Definimos como False para não forçar a largura total
                 column_config={
                     "Código da Falha": st.column_config.NumberColumn("Código", width=100),
-                    "Descrição da Avaria ECU": st.column_config.TextColumn("Descrição da Avaria", width="medium"),
+                    "Descrição da Avaria ECU": st.column_config.TextColumn("Descrição da Avaria", width="600"),
                 }
             )

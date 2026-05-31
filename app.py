@@ -92,22 +92,26 @@ COLUNAS = [
 LIMITES_SENSORES = {
     "MAP (V)": (0.0, 5.0), "MAP (Kg/h)": (0.0, 300.0), "MAP (kPa)": (10, 105),
     "CTS (V)": (0.0, 5.0), "CTS (°C)": (0, 120), "IAT (V)": (0.0, 5.0), "IAT (°C)": (0, 100),
-    "TPS (V)": (0.0, 5.0), "TPS (%)": (0, 100), "Bateria (V)": (8.0, 16.0), "Sonda (mV)": (0, 1000),
+    "TPS (V)": (0.0, 5.0), "TPS (%)": (0, 100), "Bateria (V)": (8.0, 16.0), "Sonda (mV)": (0, 10000),
     "RPM": (0, 7500), "RPM_Alvo": (0, 3000), "VSS (km/h)": (0, 240),
     "Tempo_Inj_Banco (ms)": (0.0, 30.0), "Tempo_Inj_Ciclo (ms)": (0.0, 30.0),
-    "Avanço (°)": (0, 45), "Atraso_Detonacao (%)": (0, 100),
+    "Avanço (°)": (0, 50), "Atraso_Detonacao (%)": (0, 100),
     "Canister (%)": (0, 100), "EGR (%)": (0, 100), "Tempo_Carga (ms)": (0.0, 20.0),
     "Vazao_Ar_Atual (Kg/h)": (0.0, 300.0), "Vazao_Ar_Alvo (Kg/h)": (0.0, 300.0),
     "IAC (Passos)": (0, 255), "IAC_BLM (Passos)": (0, 255), "IAC_Integrador": (0, 255),
-    "Sonda_Integrador": (0, 255), "Sonda_BLM_Lenta": (0, 255), "Sonda_BLM_Parcial": (0, 255),
-    "Consumo_Medio (km/L)": (0.0, 30.0), "Consumo_Inst (L/h)": (0.0, 30.0),
-    "Distancia_Total (km)": (0.0, 1000.0)
+    "Sonda_Integrador": (0, 255), "Sonda_BLM_Lenta": (0, 255), "Sonda_BLM_Parcial": (0, 255)
 }
 
 # --- Mapeamento de AlphaCodes (Motronic 1.5.4) ---
 ALPHACODE_MAP = {
-    "A5": "Kadett 2.0 MPFI 8v",
-    "D3": "Vectra 2.0 MPFI 8v"
+    "B3":  "Vectra 2.2 16V",
+    "D2":  "Vectra 2.0 16V",
+    "D3":  "Vectra 2.2 8V",
+    "D6":  "Vectra 2.0 16V",
+    "D9":  "Vectra 2.0 8V",
+    "A9":  "Vectra 2.0 8V",
+    "A5":  "Kadett 2.0 MPFI 8V",
+    "E1":  "Blazer / S10 2.2 8V"
     # Adicione os demais AlphaCodes aqui conforme necessário
 }
 
@@ -385,12 +389,17 @@ else:
 
         # ABA 2: GRÁFICOS DE TELEMETRIA
         with aba2:
+            # 1. Defina o que você NÃO quer mostrar
+            excluir_analog = ["IAC_Integrador", "Sonda_BLM_Lenta", "Sonda_BLM_Parcial"]
+            excluir_flags = ["Flag_VSS", "Flag_RPM", "Flag_Diag_Rqst", "Flag_Bomba_Ar", "Flag_MotorCil", "Flag_Transmissao", "Flag_Imob_Rec", "Flag_Imob_Act"]  
+
+            # 2. Filtra as listas originais
             colunas_analogicas = list(LIMITES_SENSORES.keys())
-            colunas_flags = [c for c in df.columns if c.startswith("Flag_")]
-            
+            colunas_flags = [c for c in df.columns if c.startswith("Flag_") and c not in excluir_flags]
+    
             col_sel1, col_sel2 = st.columns(2)
             with col_sel1:
-                selecionados_analog = st.multiselect("Sensores Analógicos:", options=colunas_analogicas, default=["RPM", "MAP (kPa)", "Sonda (mV)", "TPS (%)", "VSS (km/h)", "CTS (°C)"])
+                selecionados_analog = st.multiselect("Sensores Analógicos:", options=colunas_analogicas, default=["RPM", "MAP (kPa)", "TPS (%)", "VSS (km/h)", "CTS (°C)"])
             with col_sel2:
                 selecionados_flags = st.multiselect("Sinais Digitais / Flags (ON/OFF):", options=colunas_flags, default=["Flag_Knock", "Flag_AC_Embreagem"])
 
@@ -931,7 +940,15 @@ else:
                 
             st.markdown("---")
             st.markdown("#### ⚠️ Códigos de Erros Mapeados (DTCs)")
-            st.markdown("Lista completa de avarias suportadas pelo sistema Motronic 1.5.4 (Memorizado, Presente ou Intermitente).")
-            
             dtc_df = pd.DataFrame(list(DTC_TABLE.items()), columns=["Código da Falha", "Descrição da Avaria ECU"])
-            st.dataframe(dtc_df, hide_index=True, use_container_width=True)
+
+            # Ajuste fino: definimos larguras específicas e removemos o use_container_width
+            st.dataframe(
+                dtc_df, 
+                hide_index=True, 
+                use_container_width=False, # Definimos como False para não forçar a largura total
+                column_config={
+                    "Código da Falha": st.column_config.NumberColumn("Código", width=100),
+                    "Descrição da Avaria ECU": st.column_config.TextColumn("Descrição da Avaria", width="medium"),
+                }
+            )

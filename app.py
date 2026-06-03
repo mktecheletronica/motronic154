@@ -137,7 +137,7 @@ ALPHACODE_MAP = {
     "U8":  "BLAZER/S10 2.4 MPFI 8V",
     "U1":  "BLAZER/S10 2.4 MPFI 8V",
     "U5":  "BLAZER/S10 2.4 MPFI 8V",
-    "A5":  "KADETT/IPANEMA MPFI 8V",
+    "A5":  "KADETT/IPANEMA MPFI 8V"
     # Adicione os demais AlphaCodes aqui conforme necessário
 }
 

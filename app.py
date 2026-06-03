@@ -8,6 +8,7 @@ import io
 import numpy as np
 import time
 import re
+import gc # adicionado para liberação de memória dos objetos que não são mais necessários
 
 # Suprimir o FutureWarning do pacote antigo google.generativeai nos logs da Railway
 import warnings
@@ -32,6 +33,9 @@ if ENABLE_AI_DIAGNOSIS:
         import joblib
         import os
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+        
+        # IMPORTANTE PARA MEMÓRIA: Importar o backend do Keras para limpar a sessão
+        import tensorflow.keras.backend as K
         from tensorflow.keras.models import load_model
         
         # ATENÇÃO: Estes arquivos precisarão ser criados/adaptados para o Motronic futuramente
@@ -65,6 +69,8 @@ if 'log_selecionado' not in st.session_state:
 def limpar_selecao():
     st.session_state.log_selecionado = None
     st.session_state.nome_log_selecionado = ""
+    # Forçar limpeza de memória ao voltar para a home
+    gc.collect()
 
 # --- Mapeamento das 76 Colunas exatas geradas pelo C++ ---
 COLUNAS = [
@@ -104,14 +110,34 @@ LIMITES_SENSORES = {
 
 # --- Mapeamento de AlphaCodes (Motronic 1.5.4) ---
 ALPHACODE_MAP = {
-    "B3":  "Vectra 2.2 16V",
-    "D2":  "Vectra 2.0 16V",
-    "D3":  "Vectra 2.2 8V",
-    "D6":  "Vectra 2.0 16V",
-    "D9":  "Vectra 2.0 8V",
-    "A9":  "Vectra 2.0 8V",
-    "A5":  "Kadett 2.0 MPFI 8V",
-    "E1":  "Blazer / S10 2.2 8V"
+    "D3":  "VECTRA GL/GLS/CD 2.2 8V",
+    "M5":  "VECTRA GL/GLS/CD 2.2 8V",
+    "B3":  "VECTRA CD 2.0 16V",
+    "D6":  "VECTRA CD 2.0 16V",
+    "D7":  "VECTRA CD 2.0 16V",
+    "C9":  "VECTRA GLS/CD 2.0 16V",
+    "D2":  "VECTRA CD 2.2 16V",
+    "D5":  "VECTRA GL/GLS/CD 2.2 16V",
+    "H2":  "VECTRA GL/GLS/CD 2.2 16V",
+    "M1":  "VECTRA GL/GLS/CD 2.2 16V",
+    "M6":  "VECTRA GL/GLS/CD 2.2 16V",
+    "M7":  "VECTRA GL/GLS/CD 2.2 16V",
+    "P2":  "VECTRA GL/GLS/CD 2.2 16V",
+    "P3":  "VECTRA GL/GLS/CD 2.2 16V",
+    "C8":  "VECTRA GL/GLS/CD 2.0 8V",
+    "A9":  "VECTRA GL/GLS/CD 2.0 8V",
+    "D9":  "VECTRA GLS/CD 2.0 8V",
+    "G6":  "VECTRA GLS/CD 2.0 8V",
+    "S5":  "VECTRA GL/GLS/CD 2.0 8V",
+    "X6":  "VECTRA GL/GLS/CD 2.0 8V",
+    "W9":  "VECTRA GL/GLS/CD 2.0 8V",
+    "E1":  "BLAZER/S10 2.2 MPFI 8V",
+    "F7":  "BLAZER/S10 2.2 MPFI 8V",
+    "U2":  "BLAZER/S10 2.4 MPFI 8V",
+    "U8":  "BLAZER/S10 2.4 MPFI 8V",
+    "U1":  "BLAZER/S10 2.4 MPFI 8V",
+    "U5":  "BLAZER/S10 2.4 MPFI 8V",
+    "A5":  "KADETT/IPANEMA MPFI 8V",
     # Adicione os demais AlphaCodes aqui conforme necessário
 }
 
@@ -184,7 +210,7 @@ def carregar_lista_logs_publicos():
         return pd.DataFrame()
 
 # --- FUNÇÃO: Carregamento de Dados Robusto ---
-@st.cache_data
+@st.cache_data(ttl=600, max_entries=1)
 def carregar_dados(arquivo_ou_url_ou_conteudo, colunas, nome_sugerido=""):
     """Retorna o DataFrame e o nome real do ficheiro detetado"""
     nome_original = nome_sugerido
@@ -224,6 +250,12 @@ def carregar_dados(arquivo_ou_url_ou_conteudo, colunas, nome_sugerido=""):
         conteudo_limpo = io.StringIO('\n'.join(linhas_validas))
         df = pd.read_csv(conteudo_limpo, sep="|", header=None, names=colunas)
         
+        # OTIMIZAÇÃO DE MEMÓRIA: Downcast imediato para float32 e int32
+        float_cols = df.select_dtypes(include=['float64']).columns
+        int_cols = df.select_dtypes(include=['int64']).columns
+        df[float_cols] = df[float_cols].astype('float32')
+        df[int_cols] = df[int_cols].astype('int32')
+        
         df["RTM (s)"] = pd.to_numeric(df["RTM (s)"], errors="coerce")
         df = df.dropna(subset=["RTM (s)"]).copy()
         df = df[df["RTM (s)"] > 0].copy()
@@ -238,7 +270,7 @@ def carregar_dados(arquivo_ou_url_ou_conteudo, colunas, nome_sugerido=""):
         
         counts = df.groupby("RTM (s)")["RTM (s)"].transform('count')
         cumcounts = df.groupby("RTM (s)").cumcount()
-        df["RTM_Continuo"] = df["RTM (s)"] + (cumcounts / counts)
+        df["RTM_Continuo"] = df["RTM (s)"] + (cumcounts / counts).astype('float32')
         df["Tempo_Relogio"] = pd.to_datetime(df["RTM_Continuo"], unit='s')
         
         return df, nome_original
@@ -247,10 +279,13 @@ def carregar_dados(arquivo_ou_url_ou_conteudo, colunas, nome_sugerido=""):
         return None, nome_original
 
 # --- CÉREBRO DA IA (Placeholder para o Motronic) ---
-@st.cache_resource
+@st.cache_resource(max_entries=1)
 def carregar_cerebro_ia():
     if not IA_DISPONIVEL: return None, None, None, None, None
     try:
+        # Limpa qualquer modelo Keras fantasma na memória antes de carregar um novo
+        K.clear_session()
+        
         scaler = joblib.load("scaler_motronic.pkl")
         modelo = load_model("cerebro_motronic_autoencoder.keras")
         pipeline = MotronicDataPipeline(target_freq_hz=6)
@@ -478,6 +513,10 @@ else:
                 )
 
                 st.plotly_chart(fig, width="stretch")
+                
+                # Liberar memória do gráfico logo após renderizar
+                del fig
+                gc.collect()
 
         # ABA 3: DIAGNÓSTICO E INTELIGÊNCIA ARTIFICIAL
         with aba3:
@@ -527,6 +566,11 @@ else:
                     if st.button("🔍 Executar a Análise com IA", type="primary"):
                         with st.spinner("Iniciando os modelos matemáticos e a avaliando o Log..."):
                             
+                            # Variáveis para limpar no finally
+                            df_cru_ia = None
+                            df_alvo = None
+                            fig_ia = None
+                            
                             try:
                                 scaler, modelo, pipeline, mestre, biblioteca = carregar_cerebro_ia()
                                 
@@ -545,17 +589,21 @@ else:
                                     
                                     df_alvo = pipeline.processar_log(df_cru_ia)
                                     
+                                    # OTIMIZAÇÃO: Downcast float32
+                                    float_cols = df_alvo.select_dtypes(include=['float64']).columns
+                                    df_alvo[float_cols] = df_alvo[float_cols].astype('float32')
+                                    
                                     # Extração de Features Temporais - Adaptado para Sensores Motronic
-                                    df_alvo['Sonda_Diff'] = df_alvo['Sonda (mV)'].diff().fillna(0).abs()
-                                    df_alvo['TPS_Diff_Abs'] = df_alvo['TPS (%)'].diff().fillna(0).abs()
-                                    df_alvo['RPM_Diff_Abs'] = df_alvo['RPM'].diff().fillna(0).abs()
-                                    df_alvo['Bateria_Diff_Abs'] = df_alvo['Bateria (V)'].diff().fillna(0).abs()
-                                    df_alvo['MAP_V_Diff_Abs'] = df_alvo['MAP (V)'].diff().fillna(0).abs()
-                                    df_alvo['MAP_kPa_Diff_Abs'] = df_alvo['MAP (kPa)'].diff().fillna(0).abs()
-                                    df_alvo['CTS_V_Diff_Abs'] = df_alvo['CTS (V)'].diff().fillna(0).abs()
-                                    df_alvo['CTS_C_Diff_Abs'] = df_alvo['CTS (°C)'].diff().fillna(0).abs()
-                                    df_alvo['IAT_C_Diff_Abs'] = df_alvo['IAT (°C)'].diff().fillna(0).abs()
-                                    df_alvo['TPS_V_Diff_Abs'] = df_alvo['TPS (V)'].diff().fillna(0).abs()
+                                    df_alvo['Sonda_Diff'] = df_alvo['Sonda (mV)'].diff().fillna(0).abs().astype('float32')
+                                    df_alvo['TPS_Diff_Abs'] = df_alvo['TPS (%)'].diff().fillna(0).abs().astype('float32')
+                                    df_alvo['RPM_Diff_Abs'] = df_alvo['RPM'].diff().fillna(0).abs().astype('float32')
+                                    df_alvo['Bateria_Diff_Abs'] = df_alvo['Bateria (V)'].diff().fillna(0).abs().astype('float32')
+                                    df_alvo['MAP_V_Diff_Abs'] = df_alvo['MAP (V)'].diff().fillna(0).abs().astype('float32')
+                                    df_alvo['MAP_kPa_Diff_Abs'] = df_alvo['MAP (kPa)'].diff().fillna(0).abs().astype('float32')
+                                    df_alvo['CTS_V_Diff_Abs'] = df_alvo['CTS (V)'].diff().fillna(0).abs().astype('float32')
+                                    df_alvo['CTS_C_Diff_Abs'] = df_alvo['CTS (°C)'].diff().fillna(0).abs().astype('float32')
+                                    df_alvo['IAT_C_Diff_Abs'] = df_alvo['IAT (°C)'].diff().fillna(0).abs().astype('float32')
+                                    df_alvo['TPS_V_Diff_Abs'] = df_alvo['TPS (V)'].diff().fillna(0).abs().astype('float32')
                                     
                                     limites_por_estado = {'Idle': 3.5, 'Cruise': 4.0, 'Decel': 4.5, 'WOT': 5.0, 'Warmup': 6.0}
                                     limite_global_mad = 4.0
@@ -566,8 +614,8 @@ else:
                                     erros_individuais_brutos = np.power(dados_normalizados - dados_reconstruidos, 2)
                                     df_erros_individuais = pd.DataFrame(erros_individuais_brutos, columns=COLUNAS_IA, index=df_alvo.index)
                                     
-                                    df_alvo['Erro_IA_Pura'] = np.mean(erros_individuais_brutos, axis=1)
-                                    df_alvo['Limite_MAD_Estado'] = df_alvo['Estado_Motor'].map(limites_por_estado).fillna(limite_global_mad)
+                                    df_alvo['Erro_IA_Pura'] = np.mean(erros_individuais_brutos, axis=1).astype('float32')
+                                    df_alvo['Limite_MAD_Estado'] = df_alvo['Estado_Motor'].map(limites_por_estado).fillna(limite_global_mad).astype('float32')
 
                                     diagnosticos, sensores_culpados_brutos, grau_severidade = [], [], []
                                     for index, linha in df_alvo.iterrows():
@@ -588,7 +636,7 @@ else:
                                             sensores_culpados_brutos.append("Nenhum")
                                             grau_severidade.append(0)
 
-                                    df_alvo['Severidade_Final'] = grau_severidade
+                                    df_alvo['Severidade_Final'] = pd.Series(grau_severidade, dtype='float32')
                                     df_alvo['Diagnostico_Texto'] = diagnosticos
                                     df_alvo['Culpado_Bruto'] = sensores_culpados_brutos
                                     df_alvo['Culpado_Final'] = df_alvo['Culpado_Bruto']
@@ -619,7 +667,7 @@ else:
                                         df_alvo.loc[invalid_ia_mask, 'Culpado_Final'] = "Nenhum"
                                         df_alvo.loc[invalid_ia_mask, 'Culpado_Bruto'] = "Nenhum"
                                         df_alvo.loc[invalid_ia_mask, 'Diagnostico_Texto'] = "Normal"
-                                        df_alvo.loc[invalid_ia_mask, 'Severidade_Final'] = 0
+                                        df_alvo.loc[invalid_ia_mask, 'Severidade_Final'] = 0.0
 
                                     FREQ_HZ = 6
                                     frames_persistencia = max(2, int(FREQ_HZ * 0.4)) 
@@ -657,6 +705,9 @@ else:
                                             diag_dtw, distancia = biblioteca.classificar_anomalia(df_recorte, culpados)
                                             assinatura_dtw = diag_dtw
                                             st.info(f"**Análise de Curva (DTW):** {diag_dtw}")
+                                            
+                                            # Limpar df temporário
+                                            del df_recorte
                                         
                                         if len(falhas_ia) > 0:
                                             principal_ia = falhas_ia['Culpado_Final'].value_counts().index[0]
@@ -853,6 +904,25 @@ else:
 
                             except Exception as err:
                                 st.error(f"❌ Ocorreu um erro inesperado durante a análise de IA: {err}")
+                            finally:
+                                # OTIMIZAÇÃO: Excluir os grandes objetos de memória explicitamente antes do garbage collector
+                                if df_cru_ia is not None:
+                                    del df_cru_ia
+                                if df_alvo is not None:
+                                    del df_alvo
+                                if fig_ia is not None:
+                                    del fig_ia
+                                if 'dados_normalizados' in locals():
+                                    del dados_normalizados
+                                if 'dados_reconstruidos' in locals():
+                                    del dados_reconstruidos
+                                    
+                                # Limpar a sessão do Keras/TensorFlow para liberar memória de tensores
+                                if IA_DISPONIVEL:
+                                    K.clear_session()
+                                    
+                                # força a liberação de memória
+                                gc.collect()
 
         # ABA 4: DADOS BRUTOS
         with aba4:

@@ -313,18 +313,23 @@ if st.session_state.log_selecionado is None:
     df_publicos = carregar_lista_logs_publicos()
     
     if not df_publicos.empty:
-        df_publicos = df_publicos.sort_values(by="Data/Hora", ascending=False)
+        # Cria uma coluna temporária convertendo o texto para Data real (considerando o dia na frente)
+        df_publicos['Temp_Date'] = pd.to_datetime(df_publicos['Data/Hora'], dayfirst=True, errors='coerce')
+        
+        # Ordena usando a data real e depois exclui a coluna temporária para não aparecer na tabela
+        df_publicos = df_publicos.sort_values(by="Temp_Date", ascending=False).drop(columns=['Temp_Date'])
+        
         event = st.dataframe(
+
             df_publicos,
             column_order=["Data/Hora", "Duração", "Usuário", "Veículo", "Comentário", "Obs_Moderador"],
             column_config={
-                "Data/Hora": st.column_config.TextColumn("Data de Registo", width=130),
-                "Duração": st.column_config.TextColumn("Duração do Registo", width=130),
+                "Data/Hora": st.column_config.TextColumn("Data de Registro", width=130),
+                "Duração": st.column_config.TextColumn("Duração do Registro", width=130),
                 "Usuário": st.column_config.TextColumn("Enviado por", width=150),
                 "Veículo": st.column_config.TextColumn("Modelo", width=250),
-                "Comentário": st.column_config.TextColumn("Observações do Utilizador", width=550),
-                "Obs_Moderador": st.column_config.TextColumn("Observações do Moderador", width=350),
-                "ID": None, "Status_Geral": None, "Tipo_Trajeto": None,
+                "Comentário": st.column_config.TextColumn("Observações do Utilizador", width=750),
+                "Obs_Moderador": None, "ID": None, "Status_Geral": None, "Tipo_Trajeto": None,
                 "F_Engasgo": None, "F_Partida": None, "F_Potencia": None,
                 "F_MarchaLenta": None, "F_Apagando": None, "F_Consumo": None, "ID_Arquivo": None
             },
@@ -396,7 +401,7 @@ else:
 
         # ABA 1: VISÃO GERAL
         with aba1:
-            st.success(f"Log carregado: **{nome_final}** (Dashboard v{versao_dash} | {len(df)} registos)")
+            st.success(f"Log carregado: **{nome_final}** (Dashboard v{versao_dash} | {len(df)} registros)")
             try:
                 alpha = str(df["AlphaCode"].iloc[-1]).strip()
                 gm_code = str(df["Codigo_GM"].iloc[-1]).strip()

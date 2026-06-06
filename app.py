@@ -641,7 +641,7 @@ else:
                                             sensores_culpados_brutos.append("Nenhum")
                                             grau_severidade.append(0)
 
-                                    df_alvo['Severidade_Final'] = pd.Series(grau_severidade, dtype='float32')
+                                    df_alvo['Severidade_Final'] = np.array(grau_severidade, dtype=np.float32)
                                     df_alvo['Diagnostico_Texto'] = diagnosticos
                                     df_alvo['Culpado_Bruto'] = sensores_culpados_brutos
                                     df_alvo['Culpado_Final'] = df_alvo['Culpado_Bruto']

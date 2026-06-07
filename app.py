@@ -138,7 +138,7 @@ DTC_STATUS = {
 def carregar_lista_logs_publicos():
     try:
         # Conecta no seu banco de dados local
-        conn = psycopg2.connect(dbname="telemetria", user="mktech", port="5433", host="127.0.0.1")
+        conn = psycopg2.connect(dbname="telemetria", user="mktech", port="5433")
         
         # Puxa os dados organizados do mais novo para o mais velho
         query = """

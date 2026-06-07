@@ -193,7 +193,7 @@ DTC_STATUS = {
 @st.cache_data(ttl=60)
 def carregar_lista_logs_publicos():
     try:
-        conn = psycopg2.connect(dbname="telemetria", user="mktech", port="5433")
+        conn = psycopg2.connect(dbname="telemetria", user="mktech", port="5433", client_encoding="utf8")
         query = """
             SELECT data_hora, id_placa, duracao, usuario, veiculo, comentario, obs_moderador,
                    status_geral, tipo_trajeto, f_engasgo, f_partida, f_potencia,
@@ -442,7 +442,7 @@ else:
 
         # ABA 1: VISÃO GERAL
         with aba1:
-            st.success(f"Log carregado: **{nome_final}** (Dashboard v{versao_dash} | {len(df)} registros)")
+            #st.success(f"Log carregado: **{nome_final}** (Dashboard v{versao_dash} | {len(df)} registros)")
             try:
                 alpha = str(df["AlphaCode"].iloc[-1]).strip()
                 gm_code = str(df["Codigo_GM"].iloc[-1]).strip()

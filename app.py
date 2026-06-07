@@ -24,7 +24,7 @@ ENABLE_LLM_EXPLANATION = False
 ENABLE_LOCAL_UPLOAD = False       
 
 # ==============================================================================
-# TENTATIVA DE IMPORTAÇÃO DOS MÓDULOS DE IA.
+# TENTATIVA DE IMPORTAÇÃO DOS MÓDULOS DE IA
 # ==============================================================================
 IA_DISPONIVEL = False
 NOVO_SDK_GENAI = False

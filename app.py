@@ -194,7 +194,13 @@ DTC_STATUS = {
 def carregar_lista_logs_publicos():
     try:
         conn = psycopg2.connect(dbname="telemetria", user="mktech", port="5433")
-        query = "SELECT * FROM comunidade WHERE modulo_alvo = 'motronic154' ORDER BY data_hora DESC"
+        query = """
+            SELECT data_hora, id_placa, duracao, usuario, veiculo, comentario, obs_moderador,
+                   status_geral, tipo_trajeto, f_engasgo, f_partida, f_potencia,
+                   f_marcha_lenta, f_apagando, f_consumo, caminho_arquivo_local
+            FROM motronic_comunidade
+            ORDER BY data_hora DESC
+        """
         df = pd.read_sql_query(query, conn)
         conn.close()
 
@@ -204,7 +210,7 @@ def carregar_lista_logs_publicos():
         # Mapeamento do banco para as colunas originais do layout
         mapeamento = {
             "data_hora": "Data/Hora",
-            "id": "ID",
+            "id_placa": "ID",
             "duracao": "Duração",
             "usuario": "Usuário",
             "veiculo": "Veículo",
@@ -215,12 +221,15 @@ def carregar_lista_logs_publicos():
             "f_engasgo": "F_Engasgo",
             "f_partida": "F_Partida",
             "f_potencia": "F_Potencia",
-            "f_marchalenta": "F_MarchaLenta",
+            "f_marcha_lenta": "F_MarchaLenta",
             "f_apagando": "F_Apagando",
             "f_consumo": "F_Consumo",
-            "id_arquivo": "ID_Arquivo"
+            "caminho_arquivo_local": "ID_Arquivo"
         }
         df = df.rename(columns=mapeamento)
+        
+        # Formata a data para ficar visualmente limpa
+        df["Data/Hora"] = pd.to_datetime(df["Data/Hora"]).dt.strftime('%d/%m/%Y %H:%M:%S')
         
         # Blindagem contra colunas faltantes e forçar a ordem exata do original
         colunas_esperadas = ["Data/Hora", "ID", "Duração", "Usuário", "Veículo", "Comentário", "Obs_Moderador", "Status_Geral", "Tipo_Trajeto", "F_Engasgo", "F_Partida", "F_Potencia", "F_MarchaLenta", "F_Apagando", "F_Consumo", "ID_Arquivo"]
@@ -377,8 +386,8 @@ if st.session_state.log_selecionado is None:
             linha_selecionada = df_publicos.iloc[idx]
             
             # ALTERADO PARA ACESSAR DIRETAMENTE DO SSD
-            st.session_state.log_selecionado = f"/home/mktech/telemetria/logs_motronic/{linha_selecionada['ID_Arquivo']}"
-            st.session_state.nome_log_selecionado = "Arquivo da Comunidade" 
+            st.session_state.log_selecionado = linha_selecionada['ID_Arquivo']
+            st.session_state.nome_log_selecionado = f"Log de {linha_selecionada['Veículo']}"
             st.rerun() 
             
     else:
@@ -433,7 +442,7 @@ else:
 
         # ABA 1: VISÃO GERAL
         with aba1:
-            # st.success(f"Log carregado: **{nome_final}** (Dashboard v{versao_dash} | {len(df)} registros)")
+            st.success(f"Log carregado: **{nome_final}** (Dashboard v{versao_dash} | {len(df)} registros)")
             try:
                 alpha = str(df["AlphaCode"].iloc[-1]).strip()
                 gm_code = str(df["Codigo_GM"].iloc[-1]).strip()

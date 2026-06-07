@@ -266,7 +266,7 @@ def carregar_cerebro_ia():
 if st.session_state.log_selecionado is None:
     st.markdown("<h3 style='text-align: left; color: #4F4F4F; margin-bottom: 20px;'>Visualizador de LOG's Motronic 1.5.4 DashBoard</h3>", unsafe_allow_html=True)
     
-    st.subheader("🌐 Banco de Dados da Comunidade (Ao Vivo)")
+    st.subheader("🌐 Banco de Dados da Comunidade")
     st.info(" **Dica:** Os dados agora estão a ser carregados diretamente do servidor local na velocidade da luz ⚡.")
         
     df_publicos = carregar_lista_logs_publicos()

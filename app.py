@@ -522,7 +522,7 @@ else:
                         
                         y_plot = valores_numericos * 1.0 
                         
-                        fig.add_trace(go.Scatter(
+                        fig.add_trace(go.Scattergl(
                             x=df['Tempo_Relogio'], 
                             y=y_plot, 
                             name=flag, 
@@ -802,8 +802,8 @@ else:
                                     )
                                     
                                     leg_1 = "legend"
-                                    fig_ia.add_trace(go.Scatter(x=tempo_plot, y=df_alvo['RPM'], name='RPM', line=dict(color='#1f77b4', width=2), legend=leg_1), row=1, col=1, secondary_y=False)
-                                    fig_ia.add_trace(go.Scatter(x=tempo_plot, y=df_alvo['TPS (%)'], name='TPS (%)', line=dict(color='#2ca02c', width=1.5), opacity=0.7, legend=leg_1), row=1, col=1, secondary_y=True)
+                                    fig_ia.add_trace(go.Scattergl(x=tempo_plot, y=df_alvo['RPM'], name='RPM', line=dict(color='#1f77b4', width=2), legend=leg_1), row=1, col=1, secondary_y=False)
+                                    fig_ia.add_trace(go.Scattergl(x=tempo_plot, y=df_alvo['TPS (%)'], name='TPS (%)', line=dict(color='#2ca02c', width=1.5), opacity=0.7, legend=leg_1), row=1, col=1, secondary_y=True)
 
                                     estados_cores = {
                                         'Idle': 'rgba(0, 255, 255, 0.15)', 'Cruise': 'rgba(128, 128, 128, 0.15)', 
@@ -813,7 +813,7 @@ else:
                                         onde = df_alvo['Estado_Motor'] == estado
                                         if onde.any():
                                             y_bg = np.where(onde, 7500, 0)
-                                            fig_ia.add_trace(go.Scatter(x=tempo_plot, y=y_bg, fill='tozeroy', mode='none', fillcolor=cor, name=f'Estado: {estado}', hoverinfo='skip', line_shape='hv', legend=leg_1), row=1, col=1, secondary_y=False)
+                                            fig_ia.add_trace(go.Scattergl(x=tempo_plot, y=y_bg, fill='tozeroy', mode='none', fillcolor=cor, name=f'Estado: {estado}', hoverinfo='skip', line_shape='hv', legend=leg_1), row=1, col=1, secondary_y=False)
 
                                     fig_ia.update_yaxes(title_text="RPM", title_font=dict(color="#1f77b4", size=11, family="Arial Black"), range=[0, 7500], row=1, col=1, secondary_y=False)
                                     fig_ia.update_yaxes(title_text="TPS (%)", title_font=dict(color="#2ca02c", size=11, family="Arial Black"), range=[0, 100], row=1, col=1, secondary_y=True)
@@ -821,30 +821,30 @@ else:
                                     for i, sensor in enumerate(sensores_para_grafico):
                                         row = i + 2
                                         leg_s = f"legend{row}"
-                                        fig_ia.add_trace(go.Scatter(x=tempo_plot, y=df_alvo[sensor], name=sensor, line=dict(color='darkorange', width=2), legend=leg_s), row=row, col=1)
+                                        fig_ia.add_trace(go.Scattergl(x=tempo_plot, y=df_alvo[sensor], name=sensor, line=dict(color='darkorange', width=2), legend=leg_s), row=row, col=1)
 
                                         falha_sensor = (df_alvo['Falha_Confirmada'] & (df_alvo['Culpado_Final'] == sensor)).rolling(window=FREQ_HZ, center=True, min_periods=1).max() > 0
                                         if falha_sensor.any():
                                             y_max = LIMITES_SENSORES.get(sensor, (df_alvo[sensor].min(), df_alvo[sensor].max() * 1.1))[1]
                                             if pd.isna(y_max) or y_max == 0: y_max = 100
                                             y_bg_sensor = np.where(falha_sensor, y_max, 0)
-                                            fig_ia.add_trace(go.Scatter(x=tempo_plot, y=y_bg_sensor, fill='tozeroy', mode='none', fillcolor='rgba(255,0,0,0.3)', name=f'Alvo Culpado', hoverinfo='skip', line_shape='hv', legend=leg_s), row=row, col=1)
+                                            fig_ia.add_trace(go.Scattergl(x=tempo_plot, y=y_bg_sensor, fill='tozeroy', mode='none', fillcolor='rgba(255,0,0,0.3)', name=f'Alvo Culpado', hoverinfo='skip', line_shape='hv', legend=leg_s), row=row, col=1)
                                         
                                         fig_ia.update_yaxes(title_text=sensor, title_font=dict(color="darkorange", size=11, family="Arial Black"), row=row, col=1)
 
                                     row_ia = num_paineis
                                     leg_ia = f"legend{row_ia}"
-                                    fig_ia.add_trace(go.Scatter(x=tempo_plot, y=df_alvo['Severidade_Final'], name='Erro Reconstrução', line=dict(color='white', width=1.5), legend=leg_ia), row=row_ia, col=1)
+                                    fig_ia.add_trace(go.Scattergl(x=tempo_plot, y=df_alvo['Severidade_Final'], name='Erro Reconstrução', line=dict(color='white', width=1.5), legend=leg_ia), row=row_ia, col=1)
                                     
                                     mad_medio = df_alvo['Limite_MAD_Estado'].mean()
                                     linha_mad_constante = np.full(len(tempo_plot), mad_medio)
                                     
-                                    fig_ia.add_trace(go.Scatter(x=tempo_plot, y=linha_mad_constante, name='Threshold Médio (MAD)', line=dict(color='red', width=2, dash='dash'), legend=leg_ia), row=row_ia, col=1)
+                                    fig_ia.add_trace(go.Scattergl(x=tempo_plot, y=linha_mad_constante, name='Threshold Médio (MAD)', line=dict(color='red', width=2, dash='dash'), legend=leg_ia), row=row_ia, col=1)
 
                                     falha_geral_visual = df_alvo['Falha_Confirmada'].rolling(window=FREQ_HZ, center=True, min_periods=1).max() > 0
                                     if falha_geral_visual.any():
-                                        fig_ia.add_trace(go.Scatter(x=tempo_plot, y=np.where(falha_geral_visual, linha_mad_constante, np.nan), line=dict(width=0), showlegend=False, hoverinfo='skip'), row=row_ia, col=1)
-                                        fig_ia.add_trace(go.Scatter(x=tempo_plot, y=np.where(falha_geral_visual, df_alvo['Severidade_Final'], np.nan), fill='tonexty', mode='none', fillcolor='rgba(255,0,0,0.4)', name='Falha Sistêmica', hoverinfo='skip', legend=leg_ia), row=row_ia, col=1)
+                                        fig_ia.add_trace(go.Scattergl(x=tempo_plot, y=np.where(falha_geral_visual, linha_mad_constante, np.nan), line=dict(width=0), showlegend=False, hoverinfo='skip'), row=row_ia, col=1)
+                                        fig_ia.add_trace(go.Scattergl(x=tempo_plot, y=np.where(falha_geral_visual, df_alvo['Severidade_Final'], np.nan), fill='tonexty', mode='none', fillcolor='rgba(255,0,0,0.4)', name='Falha Sistêmica', hoverinfo='skip', legend=leg_ia), row=row_ia, col=1)
 
                                     fig_ia.update_yaxes(title_text="Gravidade", title_font=dict(color="white", size=11, family="Arial Black"), row=row_ia, col=1)
 

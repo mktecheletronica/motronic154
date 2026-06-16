@@ -307,6 +307,16 @@ def carregar_dados(arquivo_ou_url_ou_conteudo, colunas, nome_sugerido=""):
             if diferencas.head(10).max() > 10:
                 idx_salto = diferencas.head(10).idxmax()
                 df = df.iloc[idx_salto:].reset_index(drop=True)
+
+        # --- NOVO FILTRO DE RUÍDO DA TELEMETRIA (INÍCIO E FIM) ---
+        # Remove os primeiros 2 segundos e os últimos 2 segundos globais do log 
+        # (Somente se o log tiver mais de 4 segundos de duração no total)
+        if not df.empty and (df["RTM (s)"].max() - df["RTM (s)"].min()) > 4.0:
+            tempo_minimo = df["RTM (s)"].min()
+            tempo_maximo = df["RTM (s)"].max()
+            df = df[(df["RTM (s)"] >= tempo_minimo + 2.0) & (df["RTM (s)"] <= tempo_maximo - 2.0)]
+            df = df.reset_index(drop=True)
+        # ---------------------------------------------------------        
         
         counts = df.groupby("RTM (s)")["RTM (s)"].transform('count')
         cumcounts = df.groupby("RTM (s)").cumcount()
@@ -726,7 +736,7 @@ else:
                                     anomalia_instantanea = df_alvo['Severidade_Final'] > df_alvo['Limite_MAD_Estado']
                                     df_alvo['Falha_Confirmada'] = anomalia_instantanea.rolling(window=frames_persistencia, min_periods=1).min() > 0
 
-                                    margem = FREQ_HZ * 2 
+                                    margem = FREQ_HZ * 4 
                                     n_start, n_end = min(margem, len(df_alvo)), min(margem, len(df_alvo))
                                     df_alvo.iloc[:n_start, df_alvo.columns.get_loc('Falha_Confirmada')] = False
                                     df_alvo.iloc[-n_end:, df_alvo.columns.get_loc('Falha_Confirmada')] = False
